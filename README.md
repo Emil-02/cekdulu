@@ -1,6 +1,10 @@
 # CekDulu
 
-CekDulu adalah proyek open source lokal untuk membantu developer dan masyarakat mengecek potensi penipuan sebelum mempercayai tautan, APK, nomor ponsel, atau rekening yang mencurigakan.
+[![CI](https://github.com/Emil-02/cekdulu/actions/workflows/ci.yml/badge.svg)](https://github.com/Emil-02/cekdulu/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![spruce](https://gh-spruce.vercel.app/api/badge?repo=Emil-02/cekdulu)](https://gh-spruce.vercel.app/u/Emil-02)
+
+CekDulu adalah proyek open source untuk membantu developer dan masyarakat mengecek potensi penipuan sebelum mempercayai tautan, APK, nomor ponsel, atau rekening yang mencurigakan.
 
 Tujuan proyek ini bukan untuk menuduh seseorang, melainkan memberikan penilaian otomatis yang dibangun dari aturan terbuka, data referensi, dan laporan masyarakat yang telah dimoderasi.
 
@@ -72,4 +76,4 @@ curl http://localhost:8080/health
 
 ## Lisensi
 
-Proyek ini dirancang untuk penggunaan open source lokal. Silakan sesuaikan lisensi final saat Anda siap publikasi ke GitHub.
+[MIT](LICENSE) © 2026 Emil Rahmat
