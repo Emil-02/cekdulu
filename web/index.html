@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CekDulu</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0b1020;
+        color: #e5eefb;
+      }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+      .hero {
+        background: linear-gradient(135deg, #101b34, #1f3b75);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 32px;
+      }
+      h1 { margin-top: 0; font-size: clamp(2rem, 5vw, 3.2rem); }
+      .chips { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+      .chip {
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+        color: #dce7ff; padding: 8px 12px; border-radius: 999px; font-size: 0.9rem;
+      }
+      .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); margin-top: 28px; }
+      .card {
+        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;
+      }
+      .muted { color: #b9c7df; }
+      code { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="hero">
+        <h1>CekDulu</h1>
+        <div class="muted">Platform deteksi penipuan berbasis aturan, indikator publik, dan laporan masyarakat.</div>
+        <div class="chips">
+          <span class="chip">URL</span>
+          <span class="chip">APK</span>
+          <span class="chip">Nomor HP</span>
+          <span class="chip">Rekening</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h3>Tujuan</h3>
+          <p class="muted">Membantu masyarakat memeriksa tautan, aplikasi, dan data sensitif sebelum percaya atau membagikan informasi.</p>
+        </div>
+        <div class="card">
+          <h3>Arsitektur</h3>
+          <p class="muted">Modul scoring, rule engine, analyzer, dan service layer yang bisa dipakai dari CLI atau API.</p>
+        </div>
+        <div class="card">
+          <h3>Contoh CLI</h3>
+          <p class="muted"><code>go run ./cmd/cekdulu check link https://example.com</code></p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

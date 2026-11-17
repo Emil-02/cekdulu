@@ -1,0 +1,9 @@
+# Daftar referensi untuk analyzer tautan dan APK.
+shorteners: [bit.ly, s.id, tinyurl.com, t.co, cutt.ly, rb.gy, is.gd, shorturl.at, ow.ly, buff.ly, v.gd, t.ly, linktr.ee, rebrand.ly, tiny.cc, lnkd.in, goo.gl]
+free_hosting: [000webhostapp.com, weebly.com, wixsite.com, blogspot.com, github.io, netlify.app, vercel.app, pages.dev, web.app, firebaseapp.com, glitch.me, repl.co, ngrok.io, ngrok-free.app, trycloudflare.com, framer.website, webflow.io, sites.google.com, carrd.co]
+# Akhiran domain yang sering disalahgunakan (murah/gratis).
+risky_tlds: [tk, ml, ga, cf, gq, xyz, top, icu, cyou, buzz, rest, monster, click, link, live, online, site, shop, store, sbs, cfd, bond, vip, win, lol, mom, my.id]
+# Kata pancingan di URL.
+lure_keywords: [login, verifikasi, verify, update, hadiah, undian, bonus, klaim, claim, gratis, promo, blokir, tagihan, tilang, paket, resi, undangan, secure, akun, otp, reward, kuota, subsidi, bansos, pajak]
+# Nama berkedok dokumen pada APK palsu.
+apk_lures: [undangan, surat, tilang, resi, paket, foto, dokumen, tagihan, kurir, bukti, lihat, pdf, pernikahan, wedding, invoice, struk, pemberitahuan, pengiriman]

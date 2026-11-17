@@ -1,0 +1,156 @@
+# Aturan untuk tautan (URL). Skor positif menambah risiko, negatif menguranginya.
+# Placeholder {detail} diganti dengan detail sinyal dari analyzer.
+
+- id: link.invalid
+  target: link
+  when: link.invalid_url
+  score: 0
+  severity: info
+  message: "Teks ini bukan tautan yang valid: {detail}."
+
+- id: link.official
+  target: link
+  when: link.official_domain
+  score: -60
+  severity: info
+  message: "Domain {detail} terdaftar sebagai domain resmi."
+  advice: "Tetap pastikan ejaan alamatnya sama persis sebelum memasukkan PIN atau OTP."
+
+- id: link.blocklisted
+  target: link
+  when: link.blocklisted
+  score: 90
+  severity: critical
+  message: "Domain ini ada di daftar blokir penipuan ({detail})."
+  advice: "Jangan buka tautan ini. Hapus pesannya dan blokir pengirimnya."
+
+- id: link.reported
+  target: link
+  when: link.reported
+  score: 60
+  severity: high
+  message: "Domain ini sudah dilaporkan masyarakat dan laporannya terverifikasi ({detail})."
+  advice: "Jangan masukkan data apa pun di situs ini."
+
+- id: link.brand_lookalike
+  target: link
+  when: link.brand_lookalike
+  score: 55
+  severity: high
+  message: "Alamatnya mirip domain resmi tapi berbeda: {detail}."
+  advice: "Penipu sering memakai alamat yang hanya beda satu-dua huruf. Ketik alamat resmi secara manual."
+
+- id: link.brand_unofficial
+  target: link
+  when: link.brand_in_unofficial_domain
+  score: 40
+  severity: high
+  message: "Tautan memakai nama {detail} padahal bukan domain resminya."
+  advice: "Bank, e-wallet, dan kurir tidak pernah meminta login lewat domain pihak ketiga."
+
+- id: link.punycode
+  target: link
+  when: link.punycode
+  score: 35
+  severity: high
+  message: "Domain memakai huruf non-Latin yang bisa terlihat seperti huruf biasa ({detail})."
+
+- id: link.mixed_script
+  target: link
+  when: link.mixed_script
+  score: 30
+  severity: high
+  message: "Nama domain mencampur beberapa jenis aksara ({detail}), trik umum untuk meniru domain asli."
+
+- id: link.ip_host
+  target: link
+  when: link.ip_host
+  score: 30
+  severity: medium
+  message: "Tautan langsung ke alamat IP ({detail}), bukan nama domain."
+
+- id: link.userinfo
+  target: link
+  when: link.userinfo
+  score: 35
+  severity: high
+  message: "Tautan berisi tanda @ sebelum domain, sehingga tujuan sebenarnya adalah {detail}."
+
+- id: link.risky_tld
+  target: link
+  when: link.risky_tld
+  score: 15
+  severity: medium
+  message: "Akhiran domain .{detail} sering dipakai untuk situs penipuan karena murah atau gratis."
+
+- id: link.shortener
+  target: link
+  when: link.shortener
+  score: 10
+  severity: low
+  message: "Tautan dipendekkan dengan {detail}, sehingga tujuan aslinya tersembunyi."
+  advice: "Gunakan cekdulu dengan pengecekan jaringan agar tujuan aslinya terlihat."
+
+- id: link.free_hosting
+  target: link
+  when: link.free_hosting
+  score: 15
+  severity: medium
+  message: "Situs dihosting di layanan gratis ({detail}). Lembaga resmi jarang memakainya."
+
+- id: link.no_https
+  target: link
+  when: link.no_https
+  score: 10
+  severity: low
+  message: "Koneksi tidak terenkripsi (http, bukan https)."
+
+- id: link.many_subdomains
+  target: link
+  when: link.many_subdomains
+  score: 10
+  severity: low
+  message: "Alamatnya memiliki banyak subdomain ({detail}) untuk menyamarkan domain asli."
+
+- id: link.apk_download
+  target: link
+  when: link.apk_download
+  score: 35
+  severity: high
+  message: "Tautan mengunduh file aplikasi Android (.apk) dari luar Play Store."
+  advice: "Jangan pasang APK dari pesan WhatsApp, terutama yang mengaku undangan, resi, atau tagihan."
+
+- id: link.lure_keywords
+  target: link
+  when: link.lure_keywords
+  score: 10
+  severity: low
+  message: "Alamat mengandung kata pancingan ({detail})."
+
+- id: link.domain_new
+  target: link
+  when: link.domain_new
+  score: 35
+  severity: high
+  message: "Domain baru didaftarkan {detail}. Situs penipuan biasanya berumur sangat pendek."
+
+- id: link.domain_young
+  target: link
+  when: link.domain_young
+  score: 15
+  severity: medium
+  message: "Domain relatif baru ({detail})."
+
+- id: link.redirect_offsite
+  target: link
+  when: link.redirect_offsite
+  score: 5
+  severity: info
+  message: "Tautan dialihkan ke domain lain: {detail}."
+
+- id: link.lookalike_new
+  target: link
+  all: [link.brand_lookalike, link.domain_new]
+  score: 20
+  severity: critical
+  message: "Kombinasi berbahaya: domain tiruan yang baru dibuat."

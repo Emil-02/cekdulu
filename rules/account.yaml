@@ -1,0 +1,21 @@
+- id: account.invalid
+  target: account
+  when: account.invalid
+  score: 0
+  severity: info
+  message: "Data rekening tidak valid: {detail}."
+
+- id: account.reported
+  target: account
+  when: account.reported
+  score: 65
+  severity: high
+  message: "Rekening ini sudah dilaporkan masyarakat dan laporannya terverifikasi ({detail})."
+  advice: "Jangan transfer. Bila sudah terlanjur, segera hubungi bank pengirim untuk pemblokiran."
+
+- id: account.reported_many
+  target: account
+  when: account.reported_many
+  score: 25
+  severity: critical
+  message: "Rekening ini dilaporkan berkali-kali."

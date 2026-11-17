@@ -1,0 +1,158 @@
+# Aturan untuk file aplikasi Android (.apk). Analisis bersifat statis: APK tidak pernah dijalankan.
+
+- id: apk.invalid
+  target: apk
+  when: apk.invalid
+  score: 0
+  severity: info
+  message: "File ini tidak bisa dibaca sebagai APK: {detail}."
+
+- id: apk.blocklisted
+  target: apk
+  when: apk.blocklisted
+  score: 95
+  severity: critical
+  message: "Sidik jari (SHA-256) file ini cocok dengan APK penipuan yang sudah dilaporkan ({detail})."
+  advice: "Jangan pasang. Jika sudah terpasang, ikuti panduan 'sudah terlanjur'."
+
+- id: apk.read_sms
+  target: apk
+  when: apk.perm.READ_SMS
+  score: 30
+  severity: high
+  message: "Aplikasi meminta izin MEMBACA SMS. Penipu memakainya untuk mencuri kode OTP bank dan e-wallet."
+
+- id: apk.receive_sms
+  target: apk
+  when: apk.perm.RECEIVE_SMS
+  score: 25
+  severity: high
+  message: "Aplikasi meminta izin MENERIMA SMS secara diam-diam."
+
+- id: apk.send_sms
+  target: apk
+  when: apk.perm.SEND_SMS
+  score: 20
+  severity: high
+  message: "Aplikasi bisa MENGIRIM SMS atas namamu (misalnya menyebarkan dirinya ke kontakmu)."
+
+- id: apk.sms_receiver
+  target: apk
+  when: apk.receiver.sms
+  score: 20
+  severity: high
+  message: "Aplikasi otomatis berjalan setiap ada SMS masuk."
+
+- id: apk.accessibility
+  target: apk
+  when: apk.service.accessibility
+  score: 35
+  severity: critical
+  message: "Aplikasi memakai layanan Aksesibilitas, yang bisa membaca layar dan menekan tombol sendiri."
+  advice: "Jangan pernah menyalakan izin Aksesibilitas untuk aplikasi yang tidak kamu kenal."
+
+- id: apk.notification_listener
+  target: apk
+  when: apk.service.notification_listener
+  score: 25
+  severity: high
+  message: "Aplikasi bisa membaca semua notifikasi, termasuk OTP dan chat."
+
+- id: apk.device_admin
+  target: apk
+  when: apk.receiver.device_admin
+  score: 20
+  severity: high
+  message: "Aplikasi meminta hak admin perangkat sehingga sulit dihapus."
+
+- id: apk.read_contacts
+  target: apk
+  when: apk.perm.READ_CONTACTS
+  score: 10
+  severity: medium
+  message: "Aplikasi meminta izin membaca kontak."
+
+- id: apk.read_call_log
+  target: apk
+  when: apk.perm.READ_CALL_LOG
+  score: 10
+  severity: medium
+  message: "Aplikasi meminta izin membaca riwayat panggilan."
+
+- id: apk.install_packages
+  target: apk
+  when: apk.perm.REQUEST_INSTALL_PACKAGES
+  score: 10
+  severity: medium
+  message: "Aplikasi bisa memasang aplikasi lain."
+
+- id: apk.overlay
+  target: apk
+  when: apk.perm.SYSTEM_ALERT_WINDOW
+  score: 10
+  severity: medium
+  message: "Aplikasi bisa menampilkan layar di atas aplikasi lain (dipakai untuk halaman login palsu)."
+
+- id: apk.telegram_bot
+  target: apk
+  when: apk.telegram_bot
+  score: 45
+  severity: critical
+  message: "Ditemukan alamat bot Telegram di dalam aplikasi ({detail}). Ini pola khas APK pencuri OTP yang mengirim SMS korban ke penipu."
+
+- id: apk.sms_exfiltration
+  target: apk
+  all: [apk.perm.RECEIVE_SMS, apk.telegram_bot]
+  score: 20
+  severity: critical
+  message: "Kombinasi berbahaya: aplikasi menerima SMS dan punya jalur kirim ke Telegram."
+
+- id: apk.lure_name
+  target: apk
+  when: apk.lure_name
+  score: 25
+  severity: high
+  message: "Nama aplikasi atau file menyamar sebagai dokumen ({detail})."
+  advice: "Undangan, resi, foto, dan surat tilang tidak pernah berbentuk aplikasi .apk."
+
+- id: apk.brand_impersonation
+  target: apk
+  when: apk.brand_impersonation
+  score: 40
+  severity: critical
+  message: "Aplikasi mengaku sebagai {detail}, tetapi nama paketnya bukan milik aplikasi resmi."
+
+- id: apk.debug_cert
+  target: apk
+  when: apk.cert.debug
+  score: 15
+  severity: medium
+  message: "Aplikasi ditandatangani dengan sertifikat debug, bukan sertifikat rilis."
+
+- id: apk.unsigned
+  target: apk
+  when: apk.cert.missing
+  score: 15
+  severity: medium
+  message: "Aplikasi tidak memiliki tanda tangan digital yang bisa dibaca."
+
+- id: apk.recent_cert
+  target: apk
+  when: apk.cert.recent
+  score: 10
+  severity: low
+  message: "Sertifikat aplikasi baru dibuat ({detail})."
+
+- id: apk.old_target
+  target: apk
+  when: apk.target_sdk_old
+  score: 15
+  severity: medium
+  message: "Aplikasi menargetkan Android lama (targetSdk {detail}) sehingga semua izin langsung diberikan saat dipasang."
+
+- id: apk.generic_package
+  target: apk
+  when: apk.package.generic
+  score: 10
+  severity: low
+  message: "Nama paket terlihat asal-asalan ({detail})."

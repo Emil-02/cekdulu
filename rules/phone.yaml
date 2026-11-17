@@ -1,0 +1,28 @@
+- id: phone.invalid
+  target: phone
+  when: phone.invalid
+  score: 0
+  severity: info
+  message: "Nomor tidak valid: {detail}."
+
+- id: phone.foreign
+  target: phone
+  when: phone.foreign
+  score: 15
+  severity: low
+  message: "Nomor luar negeri ({detail}). Waspadai telepon atau WhatsApp yang mengaku dari instansi Indonesia."
+
+- id: phone.reported
+  target: phone
+  when: phone.reported
+  score: 60
+  severity: high
+  message: "Nomor ini sudah dilaporkan masyarakat dan laporannya terverifikasi ({detail})."
+  advice: "Jangan transfer, jangan bagikan OTP, dan jangan pasang aplikasi yang dikirim nomor ini."
+
+- id: phone.reported_many
+  target: phone
+  when: phone.reported_many
+  score: 25
+  severity: critical
+  message: "Nomor ini dilaporkan berkali-kali."

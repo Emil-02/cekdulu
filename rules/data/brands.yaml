@@ -1,0 +1,79 @@
+# Merek yang sering ditiru penipu. "domains" = domain resmi (termasuk subdomainnya).
+# "keywords" = kata yang menandakan merek ini di URL atau nama aplikasi.
+# "packages" = nama paket Android resmi.
+- name: BCA
+  keywords: [bca, klikbca, mybca]
+  domains: [bca.co.id, klikbca.com]
+  packages: [com.bca, com.bca.mybca.omni.android]
+- name: BRI
+  keywords: [bri, brimo]
+  domains: [bri.co.id]
+  packages: [id.co.bri.brimo]
+- name: BNI
+  keywords: [bni, wondr]
+  domains: [bni.co.id]
+  packages: [src.com.bni, id.bni.wondr]
+- name: Bank Mandiri
+  keywords: [mandiri, livin]
+  domains: [bankmandiri.co.id]
+  packages: [id.bmri.livin]
+- name: BSI
+  keywords: [bankbsi, bsimobile]
+  domains: [bankbsi.co.id]
+  packages: [com.bsm.activity2]
+- name: DANA
+  keywords: [dana]
+  domains: [dana.id]
+  packages: [id.dana]
+- name: OVO
+  keywords: [ovo]
+  domains: [ovo.id]
+  packages: [ovo.id]
+- name: GoPay
+  keywords: [gopay, gojek]
+  domains: [gopay.co.id, gojek.com]
+  packages: [com.gojek.app, com.gojek.gopay]
+- name: ShopeePay
+  keywords: [shopee, shopeepay]
+  domains: [shopee.co.id, shopee.com]
+  packages: [com.shopee.id]
+- name: Tokopedia
+  keywords: [tokopedia]
+  domains: [tokopedia.com]
+  packages: [com.tokopedia.tkpd]
+- name: J&T Express
+  keywords: [jnt, jntexpress, jet]
+  domains: [jet.co.id]
+  packages: [com.msd.JTClient]
+- name: JNE
+  keywords: [jne]
+  domains: [jne.co.id]
+  packages: [com.indivara.jneone]
+- name: Pos Indonesia
+  keywords: [posindonesia, posind]
+  domains: [posindonesia.co.id]
+  packages: [com.posindonesia.cob]
+- name: PLN
+  keywords: [pln]
+  domains: [pln.co.id]
+  packages: [com.icon.pln123]
+- name: BPJS
+  keywords: [bpjs]
+  domains: [bpjs-kesehatan.go.id, bpjsketenagakerjaan.go.id]
+  packages: [app.bpjs.mobile, com.bpjstku]
+- name: WhatsApp
+  keywords: [whatsapp]
+  domains: [whatsapp.com, wa.me]
+  packages: [com.whatsapp]
+- name: Telkomsel
+  keywords: [telkomsel]
+  domains: [telkomsel.com]
+  packages: [com.telkomsel.telkomselcm]
+- name: Kominfo / Komdigi
+  keywords: [kominfo, komdigi]
+  domains: [kominfo.go.id, komdigi.go.id]
+  packages: []
+- name: Korlantas / e-Tilang
+  keywords: [etilang, tilang, korlantas]
+  domains: [korlantas.polri.go.id, polri.go.id]
+  packages: []

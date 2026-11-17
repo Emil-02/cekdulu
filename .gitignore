@@ -1,0 +1,7 @@
+/cekdulu
+/cekdulu-api
+*.exe
+*.test
+*.out
+.env
+.env.*
