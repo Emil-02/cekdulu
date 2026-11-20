@@ -1,5 +1,7 @@
 # CekDulu
 
+[![jaga](https://jaga-card.vercel.app/api/badge?owner=Emil-02&repo=cekdulu)](https://jaga-card.vercel.app/r/Emil-02/cekdulu)
+
 [![CI](https://github.com/Emil-02/cekdulu/actions/workflows/ci.yml/badge.svg)](https://github.com/Emil-02/cekdulu/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![spruce](https://gh-spruce.vercel.app/api/badge?repo=Emil-02/cekdulu)](https://gh-spruce.vercel.app/u/Emil-02)
