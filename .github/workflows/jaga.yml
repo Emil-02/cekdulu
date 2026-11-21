@@ -24,8 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.JAGA_PAT }}
       - uses: Emil-02/jaga@main
         with:
           report: "true"
