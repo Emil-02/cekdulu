@@ -9,9 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Emil-02/cekdulu/internal/app"
 	"github.com/Emil-02/cekdulu/internal/check"
-	"github.com/Emil-02/cekdulu/internal/report"
-	"github.com/Emil-02/cekdulu/internal/secret"
 )
 
 func main() {
@@ -19,6 +18,17 @@ func main() {
 }
 
 func run(args []string) int {
+	online := false
+	var rest []string
+	for _, a := range args {
+		if a == "--online" || a == "-online" {
+			online = true
+			continue
+		}
+		rest = append(rest, a)
+	}
+	args = rest
+
 	if len(args) == 0 || args[0] == "help" || args[0] == "-h" || args[0] == "--help" {
 		printUsage(os.Stdout)
 		return 0
@@ -26,6 +36,15 @@ func run(args []string) int {
 
 	if args[0] == "version" {
 		fmt.Println("cekdulu dev")
+		return 0
+	}
+
+	if args[0] == "migrate" {
+		if err := app.Migrate(context.Background(), os.Getenv("DATABASE_URL")); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		fmt.Println("migrasi selesai")
 		return 0
 	}
 
@@ -40,15 +59,16 @@ func run(args []string) int {
 		return 1
 	}
 
-	svc, err := newService()
+	a, err := openApp(online)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
+	defer a.Close()
 
 	target := args[1]
 	payload := strings.Join(args[2:], " ")
-	result, err := executeCheck(svc, target, payload)
+	result, err := executeCheck(a.Service, target, payload)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -63,17 +83,13 @@ func run(args []string) int {
 	return 0
 }
 
-func newService() (*check.Service, error) {
-	key := []byte(os.Getenv("CEKDULU_HMAC_KEY"))
-	cfg := check.Config{Store: report.NewMemory()}
-	if len(key) > 0 {
-		h, err := secret.NewHasher(key)
-		if err != nil {
-			return nil, err
-		}
-		cfg.Hasher = h
+func openApp(online bool) (*app.App, error) {
+	cfg, err := app.FromEnv(os.Getenv, false)
+	if err != nil {
+		return nil, err
 	}
-	return check.New(cfg)
+	cfg.Online = cfg.Online || online
+	return app.Open(context.Background(), cfg)
 }
 
 func executeCheck(svc *check.Service, target, payload string) (any, error) {
@@ -115,10 +131,14 @@ func filepathName(p string) string {
 func printUsage(w io.Writer) {
 	fmt.Fprintln(w, "Penggunaan:")
 	fmt.Fprintln(w, "  cekdulu version")
-	fmt.Fprintln(w, "  cekdulu check link <url>")
+	fmt.Fprintln(w, "  cekdulu migrate                       (terapkan skema ke DATABASE_URL)")
+	fmt.Fprintln(w, "  cekdulu check [--online] link <url>   (--online: ikuti pengalihan & cek umur domain)")
 	fmt.Fprintln(w, "  cekdulu check apk <path/to/file.apk>")
 	fmt.Fprintln(w, "  cekdulu check phone <nomor>")
 	fmt.Fprintln(w, "  cekdulu check account <provider> <nomor>")
 	fmt.Fprintln(w, "")
-	fmt.Fprintln(w, "Catatan: untuk menilai laporan masyarakat gunakan CEKDULU_HMAC_KEY.")
+	fmt.Fprintln(w, "Variabel lingkungan:")
+	fmt.Fprintln(w, "  DATABASE_URL      cocokkan dengan laporan masyarakat di Postgres")
+	fmt.Fprintln(w, "  CEKDULU_HMAC_KEY  wajib untuk mencocokkan nomor HP dan rekening (sama dengan server)")
+	fmt.Fprintln(w, "  CEKDULU_ONLINE=1  sama dengan --online")
 }

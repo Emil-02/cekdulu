@@ -38,6 +38,9 @@ type Result struct {
 	Disclaimer string                `json:"disclaimer"`
 }
 
+// ErrInvalidAPK wraps errors caused by an unreadable or malformed APK.
+var ErrInvalidAPK = errors.New("APK tidak valid")
+
 // Config configures a Service.
 type Config struct {
 	// Store is optional; without it, community reports are not consulted.
@@ -136,7 +139,7 @@ func (s *Service) Link(ctx context.Context, raw string) (Result, error) {
 func (s *Service) APK(ctx context.Context, r io.ReaderAt, size int64, name string) (Result, error) {
 	rep, sigs, err := s.apk.Analyze(r, size, name)
 	if err != nil {
-		return Result{}, err
+		return Result{}, fmt.Errorf("%w: %w", ErrInvalidAPK, err)
 	}
 	st, err := s.lookup(ctx, report.KindAPK, rep.SHA256)
 	if err != nil {

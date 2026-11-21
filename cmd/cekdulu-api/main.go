@@ -1,173 +1,108 @@
+// Command cekdulu-api serves the CekDulu HTTP API.
 package main
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
+	"errors"
 	"fmt"
-	"io"
+	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/Emil-02/cekdulu/internal/check"
-	"github.com/Emil-02/cekdulu/internal/report"
-	"github.com/Emil-02/cekdulu/internal/secret"
+	"github.com/Emil-02/cekdulu/internal/api"
+	"github.com/Emil-02/cekdulu/internal/app"
 )
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	cfg, err := app.FromEnv(os.Getenv, true)
+	if err != nil {
+		return err
+	}
+	moderators, err := api.ParseModerators(os.Getenv("CEKDULU_MODERATORS"))
+	if err != nil {
+		return fmt.Errorf("CEKDULU_MODERATORS: %w", err)
+	}
+	trustProxy, err := app.Bool(os.Getenv("CEKDULU_TRUST_PROXY"), false)
+	if err != nil {
+		return fmt.Errorf("CEKDULU_TRUST_PROXY: %w", err)
+	}
+
+	openCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	a, err := app.Open(openCtx, cfg)
+	cancel()
+	if err != nil {
+		return err
+	}
+	defer a.Close()
+
+	if !a.Persistent {
+		log.Warn("DATABASE_URL belum diatur: laporan disimpan di memori dan hilang saat server berhenti")
+	}
+	if a.Hasher == nil {
+		log.Warn("CEKDULU_HMAC_KEY belum diatur: laporan nomor HP dan rekening dinonaktifkan")
+	}
+	if len(moderators) == 0 {
+		log.Warn("CEKDULU_MODERATORS belum diatur: endpoint moderasi dinonaktifkan")
+	}
+
 	port := os.Getenv("CEKDULU_PORT")
 	if port == "" {
 		port = "8080"
 	}
-	addr := ":" + port
-
-	svc, err := newService()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	srv := &http.Server{
+		Addr: ":" + port,
+		Handler: api.New(api.Options{
+			Service:    a.Service,
+			Store:      a.Store,
+			Hasher:     a.Hasher,
+			Blobs:      a.Blobs,
+			Moderators: moderators,
+			TrustProxy: trustProxy,
+			CheckRate:  api.DefaultCheckRate,
+			SubmitRate: api.DefaultSubmitRate,
+			Persistent: a.Persistent,
+			Online:     cfg.Online,
+			Logger:     log,
+		}),
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       2 * time.Minute,
+		WriteTimeout:      2 * time.Minute,
+		IdleTimeout:       2 * time.Minute,
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
+	errc := make(chan error, 1)
+	go func() {
+		log.Info("cekdulu API berjalan", "addr", srv.Addr, "persistent", a.Persistent, "online", cfg.Online,
+			"moderators", len(moderators), "evidence", a.Blobs != nil)
+		errc <- srv.ListenAndServe()
+	}()
+
+	select {
+	case err := <-errc:
+		if !errors.Is(err, http.ErrServerClosed) {
+			return err
 		}
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"status":  "ok",
-			"service": "cekdulu",
-			"time":    time.Now().UTC().Format(time.RFC3339),
-		})
-	})
-	mux.HandleFunc("/api/v1/check/link", makeHandler(svc, handleLink))
-	mux.HandleFunc("/api/v1/check/phone", makeHandler(svc, handlePhone))
-	mux.HandleFunc("/api/v1/check/account", makeHandler(svc, handleAccount))
-	mux.HandleFunc("/api/v1/check/apk", makeHandler(svc, handleAPK))
-
-	fmt.Printf("cekdulu API listening on %s\n", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-func newService() (*check.Service, error) {
-	cfg := check.Config{Store: report.NewMemory()}
-	if key := os.Getenv("CEKDULU_HMAC_KEY"); key != "" {
-		h, err := secret.NewHasher([]byte(key))
-		if err != nil {
-			return nil, err
-		}
-		cfg.Hasher = h
-	}
-	return check.New(cfg)
-}
-
-type handlerFunc func(*check.Service, http.ResponseWriter, *http.Request) error
-
-func makeHandler(svc *check.Service, fn handlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if r.Method != http.MethodPost {
-			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-			return
-		}
-		if err := fn(svc, w, r); err != nil {
-			http.Error(w, `{"error":"`+strings.ReplaceAll(err.Error(), "\n", " ")+`"}`, http.StatusBadRequest)
-			return
+	case <-ctx.Done():
+		log.Info("menghentikan server")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return err
 		}
 	}
-}
-
-func handleLink(svc *check.Service, w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		URL string `json:"url"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil && !isEmptyBody(r.Body) {
-		return err
-	}
-	if req.URL == "" {
-		return fmt.Errorf("field url wajib diisi")
-	}
-	res, err := svc.Link(r.Context(), req.URL)
-	if err != nil {
-		return err
-	}
-	return json.NewEncoder(w).Encode(res)
-}
-
-func handlePhone(svc *check.Service, w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		Phone string `json:"phone"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil && !isEmptyBody(r.Body) {
-		return err
-	}
-	if req.Phone == "" {
-		return fmt.Errorf("field phone wajib diisi")
-	}
-	res, err := svc.Phone(r.Context(), req.Phone)
-	if err != nil {
-		return err
-	}
-	return json.NewEncoder(w).Encode(res)
-}
-
-func handleAccount(svc *check.Service, w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		Provider string `json:"provider"`
-		Number   string `json:"number"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil && !isEmptyBody(r.Body) {
-		return err
-	}
-	if req.Provider == "" || req.Number == "" {
-		return fmt.Errorf("field provider dan number wajib diisi")
-	}
-	res, err := svc.Account(r.Context(), req.Provider, req.Number)
-	if err != nil {
-		return err
-	}
-	return json.NewEncoder(w).Encode(res)
-}
-
-func handleAPK(svc *check.Service, w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		return fmt.Errorf("form upload APK tidak valid: %w", err)
-	}
-	file, header, err := r.FormFile("file")
-	if err != nil {
-		return fmt.Errorf("file APK wajib dikirim: %w", err)
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	name := header.Filename
-	if name == "" {
-		name = filepath.Base(r.FormValue("name"))
-	}
-	if name == "" {
-		name = "upload.apk"
-	}
-
-	res, err := svc.APK(r.Context(), bytes.NewReader(data), int64(len(data)), name)
-	if err != nil {
-		return err
-	}
-	return json.NewEncoder(w).Encode(res)
-}
-
-func isEmptyBody(r io.ReadCloser) bool {
-	buf := make([]byte, 1)
-	_, err := r.Read(buf)
-	if err != nil && err != io.EOF {
-		return false
-	}
-	return true
+	return nil
 }

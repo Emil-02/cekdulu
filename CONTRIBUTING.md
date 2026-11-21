@@ -5,7 +5,7 @@ Terima kasih mau membantu pengembangan CekDulu.
 ## Alur kerja
 
 1. Fork repo ini dan buat cabang baru.
-2. Jalankan `go test ./...` sebelum mengirim perubahan.
+2. Jalankan `go test ./...` sebelum mengirim perubahan. Untuk perubahan di `internal/report`, jalankan juga tes Postgres dengan `CEKDULU_TEST_DATABASE_URL` yang menunjuk ke database kosong khusus tes.
 3. Pastikan perubahan tetap fokus pada keamanan, deteksi, dan manfaat pengguna.
 4. Hindari menambahkan data pribadi atau informasi sensitif yang tidak perlu.
 
